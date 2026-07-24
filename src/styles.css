@@ -71,6 +71,10 @@ body {
   display: none !important;
 }
 
+.icon-sprite {
+  display: none;
+}
+
 /* ---------- Icons ---------- */
 
 .icon {
@@ -347,6 +351,7 @@ body {
 /* ---------- Segmented control ---------- */
 
 .segmented {
+  --count: 2;
   position: relative;
   display: flex;
   background: var(--surface-2);

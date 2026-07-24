@@ -10,7 +10,7 @@
 
   <body>
     <!-- Sprite d'icônes SVG inline (aucune ressource externe) -->
-    <svg xmlns="http://www.w3.org/2000/svg" style="display: none">
+    <svg xmlns="http://www.w3.org/2000/svg" class="icon-sprite">
       <defs>
         <symbol id="i-key" viewBox="0 0 24 24">
           <circle cx="7" cy="15" r="3.25" />
@@ -195,7 +195,7 @@
         <p class="status" id="identity-status" role="status"></p>
       </section>
 
-      <nav class="segmented segmented-main" id="main-tabs" style="--count: 2">
+      <nav class="segmented segmented-main" id="main-tabs">
         <span class="segmented-thumb" id="main-thumb"></span>
         <button class="segmented-btn active" data-panel="sign" type="button">
           <svg class="icon"><use href="#i-pencil"></use></svg>
@@ -214,7 +214,7 @@
             Créez ou chargez une identité ci-dessus pour activer la signature.
           </p>
 
-          <div class="segmented segmented-sub" id="sign-sub-tabs" style="--count: 2">
+          <div class="segmented segmented-sub" id="sign-sub-tabs">
             <span class="segmented-thumb" id="sign-sub-thumb"></span>
             <button class="segmented-btn active" data-mode="text" type="button">Texte</button>
             <button class="segmented-btn" data-mode="file" type="button">Fichier</button>
@@ -303,7 +303,7 @@
           <label for="verify-pubkey">Clé publique de l'auteur (hex)</label>
           <input id="verify-pubkey" type="text" placeholder="clé publique connue via bio, DNS…" />
 
-          <div class="segmented segmented-sub" id="verify-sub-tabs" style="--count: 2">
+          <div class="segmented segmented-sub" id="verify-sub-tabs">
             <span class="segmented-thumb" id="verify-sub-thumb"></span>
             <button class="segmented-btn active" data-mode="text" type="button">Texte</button>
             <button class="segmented-btn" data-mode="file" type="button">Fichier</button>

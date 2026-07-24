@@ -1,0 +1,49 @@
+# Config for `cargo deny check` — voir Kleido.md, section "Sécurité supply-chain".
+
+[graph]
+all-features = false
+no-default-features = false
+
+[advisories]
+ignore = []
+# Les crates "unmaintained" restants sont tous des dépendances transitives
+# profondes de Tauri (bindings GTK3 Linux, `unic-*`) sans mise à jour amont
+# disponible — on limite donc le check aux crates de notre propre workspace,
+# qu'on contrôle réellement.
+unmaintained = "workspace"
+
+[licenses]
+confidence-threshold = 0.8
+# Licences permissives couvrant l'intégralité de l'arbre de dépendances actuel
+# (vérifié via `cargo deny check licenses` sur la config par défaut, qui liste
+# chaque licence rejetée). Rien de copyleft fort (GPL/AGPL) n'est autorisé.
+allow = [
+    "MIT",
+    "MIT-0",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-1-Clause",
+    "BSD-3-Clause",
+    "0BSD",
+    "Zlib",
+    "CC0-1.0",
+    "Unicode-3.0",
+    "Unlicense",
+    "MPL-2.0",
+]
+
+[licenses.private]
+# kleido n'est jamais publié sur crates.io (publish = false) : pas besoin de
+# lui exiger une licence déclarée.
+ignore = true
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+allow-workspace = true
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []
