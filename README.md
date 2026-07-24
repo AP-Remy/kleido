@@ -1,5 +1,5 @@
 
-# Kleido
+# Kleido 
 
 > Outil de signature cryptographique offline pour créateurs de contenu, destiné à prouver l'authenticité de leurs publications face à la montée des deepfakes.
 
