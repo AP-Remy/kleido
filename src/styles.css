@@ -6,10 +6,14 @@
   --text: #191b23;
   --muted: #6b6f80;
 
-  --accent: #4f46e5;
-  --accent-strong: #4338ca;
-  --accent-soft: rgba(79, 70, 229, 0.1);
+  --accent: #1f7a88;
+  --accent-strong: #145e6a;
+  --accent-soft: rgba(31, 122, 136, 0.1);
   --on-accent: #ffffff;
+
+  --gold: #d98a1f;
+  --gold-strong: #a86814;
+  --gold-soft: rgba(217, 138, 31, 0.12);
 
   --ok: #16794f;
   --ok-soft: rgba(22, 121, 79, 0.1);
@@ -44,10 +48,14 @@
     --text: #eceef4;
     --muted: #9498ab;
 
-    --accent: #818cf8;
-    --accent-strong: #a5b0fb;
-    --accent-soft: rgba(129, 140, 248, 0.16);
-    --on-accent: #14152080;
+    --accent: #5fb8c4;
+    --accent-strong: #86cdd6;
+    --accent-soft: rgba(95, 184, 196, 0.16);
+    --on-accent: #0f202780;
+
+    --gold: #f0b25a;
+    --gold-strong: #f6c988;
+    --gold-soft: rgba(240, 178, 90, 0.16);
 
     --ok: #4ade9a;
     --ok-soft: rgba(74, 222, 154, 0.14);
@@ -82,7 +90,7 @@ body {
   height: 18px;
   stroke: currentColor;
   fill: none;
-  stroke-width: 1.8;
+  stroke-width: 2.2;
   stroke-linecap: round;
   stroke-linejoin: round;
   flex-shrink: 0;
@@ -579,13 +587,13 @@ textarea#text-sign-block {
 }
 
 .icon-btn-accent {
-  color: var(--accent);
-  border-color: var(--accent);
-  background: var(--accent-soft);
+  color: var(--gold-strong);
+  border-color: var(--gold);
+  background: var(--gold-soft);
 }
 
 .icon-btn-accent:hover {
-  background: var(--accent);
+  background: var(--gold);
   color: white;
 }
 
@@ -836,6 +844,40 @@ textarea#text-sign-block {
   color: var(--muted);
   font-size: 0.72rem;
   min-width: 1.3em;
+}
+
+.mnemonic-input-word {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.55rem;
+  transition: border-color 0.15s;
+}
+
+.mnemonic-input-word:focus-within {
+  border-color: var(--accent);
+}
+
+.mnemonic-input-word .index {
+  color: var(--muted);
+  font-size: 0.72rem;
+  min-width: 1.3em;
+  flex-shrink: 0;
+}
+
+.mnemonic-input-word input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 0.82rem;
+  font-family: "Cascadia Code", Consolas, monospace;
+  color: var(--text);
+  outline: none;
 }
 
 .mnemonic-verify {

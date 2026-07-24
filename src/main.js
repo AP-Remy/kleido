@@ -395,20 +395,69 @@ window.addEventListener("DOMContentLoaded", () => {
   const importOverlay = document.querySelector("#import-modal-overlay");
   const btnCloseImport = document.querySelector("#btn-close-import");
   const importUsernameEl = document.querySelector("#import-username");
-  const importPhraseEl = document.querySelector("#import-phrase");
+  const importPhraseGrid = document.querySelector("#import-phrase-grid");
   const importStatus = document.querySelector("#import-status");
   const btnImportConfirm = document.querySelector("#btn-import-confirm");
 
+  let importWordInputs = [];
+
+  function buildImportPhraseGrid() {
+    importPhraseGrid.innerHTML = "";
+    importWordInputs = [];
+    for (let i = 0; i < 24; i++) {
+      const wrap = document.createElement("div");
+      wrap.className = "mnemonic-input-word";
+
+      const index = document.createElement("span");
+      index.className = "index";
+      index.textContent = `${i + 1}.`;
+
+      const input = document.createElement("input");
+      input.type = "text";
+      input.autocomplete = "off";
+      input.spellcheck = false;
+
+      // Coller la phrase entière dans une case la distribue automatiquement
+      // sur les cases suivantes, plutôt que de forcer une saisie mot par mot.
+      input.addEventListener("paste", (e) => {
+        const text = e.clipboardData.getData("text");
+        const words = text.trim().split(/\s+/).filter(Boolean);
+        if (words.length <= 1) return;
+        e.preventDefault();
+        words.forEach((word, offset) => {
+          const target = importWordInputs[i + offset];
+          if (target) target.value = word;
+        });
+        const next = importWordInputs[Math.min(i + words.length, 23)];
+        next?.focus();
+      });
+
+      // Espace ou Entrée passe au mot suivant, pour une saisie manuelle rapide.
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || (e.key === " " && input.value.trim())) {
+          e.preventDefault();
+          importWordInputs[i + 1]?.focus();
+        }
+      });
+
+      wrap.append(index, input);
+      importPhraseGrid.appendChild(wrap);
+      importWordInputs.push(input);
+    }
+  }
+
   function openImportModal() {
     importUsernameEl.value = usernameEl.value.trim();
-    importPhraseEl.value = "";
+    buildImportPhraseGrid();
     setStatus(importStatus, "");
     show(importOverlay);
+    importWordInputs[0]?.focus();
   }
 
   function closeImportModal() {
     hide(importOverlay);
-    importPhraseEl.value = "";
+    importPhraseGrid.innerHTML = "";
+    importWordInputs = [];
   }
 
   btnOpenImport.addEventListener("click", openImportModal);
@@ -417,9 +466,10 @@ window.addEventListener("DOMContentLoaded", () => {
   btnImportConfirm.addEventListener("click", () =>
     withBusy(btnImportConfirm, async () => {
       const username = importUsernameEl.value.trim();
-      const phrase = importPhraseEl.value.trim();
-      if (!username || !phrase) {
-        setStatus(importStatus, "Renseignez le nom et la phrase de récupération.", "error");
+      const words = importWordInputs.map((input) => input.value.trim());
+      const phrase = words.join(" ");
+      if (!username || words.some((word) => !word)) {
+        setStatus(importStatus, "Renseignez le nom et les 24 mots.", "error");
         return;
       }
       try {
