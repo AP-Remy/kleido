@@ -1,9 +1,7 @@
+# Kleido
 
-# Kleido 
+> Outil de signature cryptographique offline pour créateurs de contenu, destiné à prouver l'authenticité de leurs publications face aux faux comptes et à la montée des deepfakes.
 
-> Outil de signature cryptographique offline pour créateurs de contenu, destiné à prouver l'authenticité de leurs publications face à la montée des deepfakes.
-
-Nom : **Kleido** (du grec _kleidí_, clé).
 
 ## Principe
 
@@ -15,69 +13,72 @@ Pas de CA, pas de Trust List (contrairement à C2PA/Content Credentials). Modèl
 
 - **C2PA / Content Credentials** : standard lourd, infrastructure de CA, casse dès qu'une plateforme réencode. Moins de 1% des médias publiés en sont porteurs (2026).
 - **Nostr** : modèle le plus proche — paire de clés secp256k1/Ed25519, contenu signé, clé publique rattachée via lien externe.
+- **Kleido** : hybride simple, léger, portable, aucune coopération de plateforme requise.
 
 ## Stack technique
 
 |Couche|Techno|Rôle|
 |---|---|---|
 |Shell app|**Tauri 2.x**|Binaire natif, webview système (pas de Chromium embarqué)|
-|Frontend|HTML/CSS/JS|UI de génération de clés et de signature|
-|Crypto EC|`ed25519-dalek`|Génération de paire de clés, signature, vérification|
+|Frontend|HTML/CSS/JS (vanilla, sans bundler)|UI de génération de clés et de signature|
+|Crypto EC|`ed25519-dalek`|Génération de paire de clés, signature (`verify_strict`), vérification|
 |Hash|`sha2`|Hash des fichiers médias avant signature|
-|Effacement mémoire|`zeroize` / `zeroize_derive`|Efface la clé privée de la RAM dès qu'elle sort de scope|
+|Sauvegarde de clé|`bip39`|Export/import de la clé privée en phrase de 24 mots|
+|Effacement mémoire|`zeroize`|Efface la clé privée de la RAM dès qu'elle sort de scope|
 |Stockage clé privée|`keyring-rs`|Trousseau système (Keychain macOS / Credential Manager Windows / Secret Service Linux)|
-|Accès fichiers|API Tauri `fs` scopée|Périmètre de lecture/écriture limité et déclaré|
-|Réseau|**aucun plugin réseau**|`tauri-plugin-http` volontairement absent — pas de code capable de faire une requête réseau|
+|Accès fichiers|`tauri-plugin-fs` + `tauri-plugin-dialog`|Périmètre de lecture/écriture limité et déclaré|
+|Réseau|**aucun plugin réseau**|`tauri-plugin-http` volontairement absent|
 |IPC|Commands Tauri + capabilities|Chaque commande exposée au frontend est listée explicitement|
 
-### Pourquoi ce choix
+### Pourquoi l'offline est structurel, pas une discipline
 
-Le offline n'est pas une discipline de code (« ne jamais appeler `fetch` ») mais une contrainte **structurelle** : sans plugin réseau déclaré dans `Cargo.toml`, le binaire ne peut physiquement pas faire de requête, quel que soit le JS exécuté côté frontend.
+Sans plugin réseau déclaré dans `Cargo.toml`, le binaire ne peut physiquement pas faire de requête, quel que soit le JS exécuté côté frontend — ce n'est pas une règle de code (« ne jamais appeler `fetch` ») qu'on pourrait oublier de respecter, c'est une impossibilité au niveau du binaire compilé.
 
-La clé privée vit en mémoire Rust, jamais exposée au contexte JS/DOM. Le calcul crypto se fait côté Rust ; le frontend ne reçoit que le résultat signé.
+La clé privée vit en mémoire Rust, jamais exposée au contexte JS/DOM. Le calcul crypto se fait côté Rust ; le frontend ne reçoit que le résultat signé (jamais la clé privée elle-même).
 
-## Prérequis
-
-- [Rust](https://www.rust-lang.org/tools/install) (édition 2021+, via `rustup`)
-- Node.js (pour le tooling frontend, npm suffit)
-- Dépendances système Tauri selon l'OS : voir [tauri.app/start/prerequisites](https://tauri.app/start/prerequisites/)
-- `cargo install create-tauri-app` (optionnel, pour le scaffold initial) ou `cargo install tauri-cli`
-
-## Structure du projet
+## Architecture
 
 ```
 kleido/
 ├── src-tauri/
 │   ├── src/
-│   │   ├── main.rs          → point d'entrée, setup Tauri, enregistrement des commands
-│   │   ├── crypto.rs        → génération de clés, signature, vérification (ed25519-dalek)
-│   │   └── keystore.rs      → stockage/lecture clé privée via keyring-rs
+│   │   ├── main.rs          → point d'entrée, appelle kleido_lib::run()
+│   │   ├── lib.rs           → setup Tauri, enregistrement des commands, plugins (fs, dialog — pas de http)
+│   │   ├── crypto.rs        → toutes les commands : clés, signature/vérification, export/import BIP-39
+│   │   └── keystore.rs      → wrapper fin autour de keyring-rs (store/retrieve/exists/delete)
 │   ├── capabilities/
 │   │   └── default.json     → permissions explicites (fs scopé, PAS de http)
+│   ├── icons/                → icônes de l'app (générées depuis logo-source.png)
 │   ├── Cargo.toml
+│   ├── deny.toml             → config cargo-deny (licences, deps non maintenues)
 │   └── tauri.conf.json
 ├── src/
 │   ├── index.html
-│   ├── style.css
-│   └── main.js               → appels aux commands Tauri (invoke)
+│   ├── styles.css
+│   ├── logo.png
+│   └── main.js               → appelle les commands via window.__TAURI__.core.invoke
 └── package.json
 ```
 
-## Dépendances Rust (`src-tauri/Cargo.toml`)
+Le frontend n'utilise pas de bundler : `withGlobalTauri: true` dans `tauri.conf.json` expose l'API sur `window.__TAURI__`, appelée directement dans `main.js` (pas d'`import` ES). Choix volontaire pour rester sur du HTML/CSS/JS simple, sans étape de build côté frontend.
 
-```toml
-[dependencies]
-tauri = { version = "2", features = [] }
-ed25519-dalek = { version = "2", features = ["rand_core"] }
-sha2 = "0.10"
-zeroize = { version = "1", features = ["derive"] }
-keyring = "3"
-rand_core = { version = "0.6", features = ["std"] }
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-```
+### Commands exposées (`crypto.rs`)
 
-Ne pas ajouter `tauri-plugin-http`, `reqwest`, ou toute autre lib réseau — c'est une contrainte de sécurité, pas un oubli.
+| Command | Rôle |
+|---|---|
+| `generate_identity(username)` | Génère une paire de clés, stocke la privée dans le trousseau, renvoie la publique |
+| `get_public_key(username)` | Redérive la clé publique d'une identité déjà stockée |
+| `identity_exists(username)` | Vérifie si une identité existe déjà |
+| `delete_identity(username)` | Supprime une identité du trousseau système |
+| `sign_text(username, content)` | Signe un texte |
+| `hash_file(file_path)` | SHA-256 d'un fichier (sans signer) |
+| `sign_file(username, file_path)` | Hash un fichier puis signe le hash |
+| `verify_text(public_key_hex, content, signature_hex)` | Vérifie une signature de texte (`verify_strict`) |
+| `verify_file(public_key_hex, file_path, signature_hex)` | Hash un fichier puis vérifie |
+| `export_mnemonic(username)` | Exporte la clé privée en phrase BIP-39 (24 mots) |
+| `import_mnemonic(username, phrase)` | Restaure une identité depuis une phrase de 24 mots |
+
+La clé privée ne transite jamais en clair vers le JS : ces commands ne renvoient que des clés publiques, des hachages, des signatures, ou (pour l'export) la phrase de récupération elle-même — jamais la clé privée brute.
 
 ## Capabilities (`src-tauri/capabilities/default.json`)
 
@@ -86,7 +87,7 @@ Modèle de permissions Tauri 2 : tout est interdit par défaut, on autorise expl
 ```json
 {
   "identifier": "default",
-  "description": "Permissions minimales Anté-Kleido",
+  "description": "Permissions minimales Kleido",
   "windows": ["main"],
   "permissions": [
     "core:default",
@@ -100,158 +101,34 @@ Modèle de permissions Tauri 2 : tout est interdit par défaut, on autorise expl
 
 Aucune permission réseau, aucun accès shell, aucun accès filesystem non scopé.
 
-## Plan par étapes
-
-### 1. Scaffold du projet
-
-```bash
-cargo create-tauri-app kleido --template vanilla
-cd kleido
-```
-
-Choisir le template vanilla JS (pas besoin de framework frontend pour cet outil).
-
-### 2. Verrouiller les capabilities
-
-Éditer `src-tauri/capabilities/default.json` comme ci-dessus **avant** d'écrire la moindre ligne de logique métier. Vérifier qu'aucun plugin réseau n'apparaît dans `Cargo.toml`.
-
-### 3. Génération de clé (`crypto.rs`)
-
-Fonction Rust exposée en command Tauri :
-
-```rust
-use ed25519_dalek::{SigningKey, VerifyingKey};
-use rand_core::OsRng;
-
-#[tauri::command]
-fn generate_keypair() -> (String, String) {
-    let mut csprng = OsRng;
-    let signing_key = SigningKey::generate(&mut csprng);
-    let verifying_key: VerifyingKey = signing_key.verifying_key();
-
-    let private_hex = hex::encode(signing_key.to_bytes());
-    let public_hex = hex::encode(verifying_key.to_bytes());
-
-    (private_hex, public_hex)
-}
-```
-
-À adapter pour stocker la clé privée directement via `keystore.rs` plutôt que de la faire transiter en clair vers le frontend.
-
-### 4. Stockage sécurisé (`keystore.rs`)
-
-```rust
-use keyring::Entry;
-
-const SERVICE: &str = "kleido";
-
-#[tauri::command]
-fn store_private_key(username: String, key_hex: String) -> Result<(), String> {
-    let entry = Entry::new(SERVICE, &username).map_err(|e| e.to_string())?;
-    entry.set_password(&key_hex).map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-fn retrieve_private_key(username: String) -> Result<String, String> {
-    let entry = Entry::new(SERVICE, &username).map_err(|e| e.to_string())?;
-    entry.get_password().map_err(|e| e.to_string())
-}
-```
-
-La clé privée ne devrait idéalement jamais transiter en clair vers le JS — signer côté Rust et ne renvoyer que la signature (voir étape 5).
-
-### 5. Signature
-
-```rust
-use ed25519_dalek::{Signature, Signer, SigningKey};
-
-#[tauri::command]
-fn sign_content(username: String, content: String) -> Result<String, String> {
-    let key_hex = retrieve_private_key(username)?;
-    let key_bytes = hex::decode(key_hex).map_err(|e| e.to_string())?;
-    let signing_key = SigningKey::from_bytes(
-        &key_bytes.try_into().map_err(|_| "clé invalide")?
-    );
-
-    let signature: Signature = signing_key.sign(content.as_bytes());
-    Ok(hex::encode(signature.to_bytes()))
-}
-```
-
-### 6. Effacement mémoire
-
-Appliquer `zeroize` sur toute variable contenant du matériel de clé une fois son usage terminé :
-
-```rust
-use zeroize::Zeroize;
-
-let mut key_bytes = /* ... */;
-// usage
-key_bytes.zeroize();
-```
-
-### 7. Vérification
-
-```rust
-use ed25519_dalek::{Signature, Verifier, VerifyingKey};
-
-#[tauri::command]
-fn verify_signature(public_key_hex: String, content: String, signature_hex: String) -> Result<bool, String> {
-    let pub_bytes = hex::decode(public_key_hex).map_err(|e| e.to_string())?;
-    let verifying_key = VerifyingKey::from_bytes(
-        &pub_bytes.try_into().map_err(|_| "clé publique invalide")?
-    ).map_err(|e| e.to_string())?;
-
-    let sig_bytes = hex::decode(signature_hex).map_err(|e| e.to_string())?;
-    let signature = Signature::from_bytes(
-        &sig_bytes.try_into().map_err(|_| "signature invalide")?
-    );
-
-    Ok(verifying_key.verify(content.as_bytes(), &signature).is_ok())
-}
-```
-
-### 8. UI frontend
-
-Dans `src/main.js`, appeler les commands via l'API `invoke` de Tauri :
-
-```js
-import { invoke } from '@tauri-apps/api/core';
-
-async function generateAndStore(username) {
-  const [privateHex, publicHex] = await invoke('generate_keypair');
-  await invoke('store_private_key', { username, keyHex: privateHex });
-  return publicHex; // à afficher/publier
-}
-
-async function sign(username, content) {
-  return await invoke('sign_content', { username, content });
-}
-```
-
-### 9. Export/sauvegarde
-
-Utiliser le plugin `tauri-plugin-dialog` pour `save`/`open`, pas d'accès filesystem libre.
-
 ## Stratégie de signature
 
 - **Texte pur** (article, post) : signer le texte directement, signature en fin de contenu.
-- **Fichier média** (image, vidéo) : hasher le fichier (`sha2`), signer le hash, donner la signature en texte dans la description/commentaire.
+- **Fichier média** (image, vidéo) : hasher le fichier (`sha2`), signer le hash (comme du texte), donner la signature en texte dans la description/commentaire.
 - Pas de watermarking perceptuel (façon SynthID) — hors de portée, complexité disproportionnée.
+
+## Sauvegarde et restauration d'identité
+
+La clé privée n'est stockée que dans le trousseau système de la machine — sans sauvegarde, une réinstallation Windows ou un changement de machine fait perdre l'identité définitivement.
+
+- **Sauvegarde** (`export_mnemonic`) : encode la clé privée (32 octets) en phrase BIP-39 de 24 mots, avec somme de contrôle. Flux guidé façon Ledger dans l'UI : avertissement → révélation des 24 mots (jamais copiables, à noter à la main) → vérification de 3 mots choisis au hasard → confirmation.
+- **Restauration** (`import_mnemonic`) : ressaisie des 24 mots (une case par mot, collage intelligent qui distribue une phrase complète sur toutes les cases), reconstitue la clé privée et la clé publique dérivée pour confirmation.
 
 ## Distribution de la clé publique
 
 - Publier le fingerprint sur 5-6 réseaux détenus par le créateur (bio X, description YouTube, site perso) — redondance = falsification coûteuse.
 - **Ancrage fort recommandé** : enregistrement DNS TXT (`pubkey.tondomaine.fr`) comme point de vérité canonique.
+- **Révocation** : pas de mécanisme centralisé (cohérent avec « pas de CA, pas de Trust List ») — en cas de compromission, le créateur republie une nouvelle clé publique sur les mêmes canaux.
 
-## Sécurité supply-chain (à intégrer au CI)
+## Vérification côté spectateur
 
-```bash
-cargo install cargo-audit cargo-deny
-cargo audit          # CVE connues sur les dépendances
-cargo deny check      # licences problématiques, dépendances dupliquées/non maintenues
-```
+[`kleido-verify/`](../kleido-verify) est une page web statique séparée (HTML/CSS/JS, zéro dépendance, zéro backend) qui vérifie une signature Kleido directement dans le navigateur via l'API Web Crypto (Ed25519 + SHA-256) — aucune installation requise pour le spectateur. Dépôt et déploiement indépendants du binaire de l'application.
 
-- Minimiser le nombre de crates tierces.
-- Build reproductible + binaire signé (notarization macOS, Authenticode Windows) pour que les utilisateurs puissent vérifier l'intégrité du logiciel lui-même — cohérent avec l'objectif anti-deepfake du projet.
+## Sécurité
+
+- **Zeroize** : toute variable contenant du matériel de clé (bytes bruts, hex intermédiaire) est effacée explicitement dès qu'elle sort de scope, y compris dans les chemins d'erreur.
+- **CSP stricte** (`default-src 'self'`) sur `kleido` et `kleido-verify`.
+- **Pas de binaire signé** (Authenticode/notarization) — démarche d'achat de certificat + vérification d'identité, hors du périmètre du code. Windows SmartScreen avertit donc au premier lancement, attendu pour un binaire non signé.
+- **Supply-chain** : `cargo audit` (CVE connues) + `cargo deny check` (licences, dépendances dupliquées/non maintenues), intégrés à la CI (`.github/workflows/ci.yml`) sur chaque push/PR. Voir `src-tauri/deny.toml` pour la liste des licences autorisées.
+- Onboarding intégré (clé publique vs privée expliquées simplement), affiché au premier lancement.
 
