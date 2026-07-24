@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kleido</title>
+    <script type="module" src="/main.js" defer></script>
+  </head>
+
+  <body>
+    <!-- Sprite d'icônes SVG inline (aucune ressource externe) -->
+    <svg xmlns="http://www.w3.org/2000/svg" style="display: none">
+      <defs>
+        <symbol id="i-key" viewBox="0 0 24 24">
+          <circle cx="7" cy="15" r="3.25" />
+          <path d="M9.5 12.5 18 4" />
+          <path d="M15 5.5 17.5 8" />
+        </symbol>
+        <symbol id="i-lock" viewBox="0 0 24 24">
+          <rect x="5" y="10.5" width="14" height="9" rx="2" />
+          <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
+          <circle cx="12" cy="15" r="1.1" fill="currentColor" stroke="none" />
+        </symbol>
+        <symbol id="i-user" viewBox="0 0 24 24">
+          <circle cx="12" cy="8" r="3.5" />
+          <path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" />
+        </symbol>
+        <symbol id="i-pencil" viewBox="0 0 24 24">
+          <path d="M4 20l.9-3.8L15.5 5.6a1.5 1.5 0 0 1 2.1 0l.8.8a1.5 1.5 0 0 1 0 2.1L7.8 19.1 4 20z" />
+          <path d="M14 7.5l2.5 2.5" />
+        </symbol>
+        <symbol id="i-shield-check" viewBox="0 0 24 24">
+          <path d="M12 3.5l6.5 2.6v5.4c0 4.6-3 7.6-6.5 8.9-3.5-1.3-6.5-4.3-6.5-8.9V6.1L12 3.5z" />
+          <path d="M9 12.2l2 2 4-4.2" />
+        </symbol>
+        <symbol id="i-copy" viewBox="0 0 24 24">
+          <rect x="9.5" y="8.5" width="10" height="10" rx="1.5" />
+          <path d="M6 15V6.5A1.5 1.5 0 0 1 7.5 5H15" />
+        </symbol>
+        <symbol id="i-check" viewBox="0 0 24 24">
+          <path d="M4.5 12.5l5 5L19.5 6.5" />
+        </symbol>
+        <symbol id="i-x" viewBox="0 0 24 24">
+          <path d="M6 6l12 12" />
+          <path d="M18 6L6 18" />
+        </symbol>
+        <symbol id="i-download" viewBox="0 0 24 24">
+          <path d="M12 4v11" />
+          <path d="M8 11.5 12 15.5 16 11.5" />
+          <path d="M5 19.5h14" />
+        </symbol>
+        <symbol id="i-file" viewBox="0 0 24 24">
+          <path d="M7 3.5h6.5L18 8v12.5H7z" />
+          <path d="M13.5 3.5V8H18" />
+        </symbol>
+        <symbol id="i-trash" viewBox="0 0 24 24">
+          <path d="M5 7.5h14" />
+          <path d="M9.5 7.5V5.8a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1.7" />
+          <path d="M7.5 7.5l.7 12a1 1 0 0 0 1 .9h5.6a1 1 0 0 0 1-.9l.7-12" />
+        </symbol>
+        <symbol id="i-swap" viewBox="0 0 24 24">
+          <path d="M4.5 9a7.5 7.5 0 0 1 13-3.8M18.5 4v4.5H14" />
+          <path d="M19.5 15a7.5 7.5 0 0 1-13 3.8M5.5 20v-4.5H10" />
+        </symbol>
+        <symbol id="i-upload" viewBox="0 0 24 24">
+          <path d="M12 15.5v-11" />
+          <path d="M8 8 12 4.5 16 8" />
+          <path d="M5 19.5h14" />
+        </symbol>
+        <symbol id="i-info" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="M12 11v5.2" />
+          <circle cx="12" cy="7.7" r="0.9" fill="currentColor" stroke="none" />
+        </symbol>
+        <symbol id="i-shield" viewBox="0 0 24 24">
+          <path d="M12 3.5l6.5 2.6v5.4c0 4.6-3 7.6-6.5 8.9-3.5-1.3-6.5-4.3-6.5-8.9V6.1L12 3.5z" />
+        </symbol>
+        <!-- Logo hexagone papier + losanges imbriqués : couleurs fixes, indépendantes du thème -->
+        <linearGradient id="logo-hex-face" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ffffff" />
+          <stop offset="100%" stop-color="#eef0f5" />
+        </linearGradient>
+        <symbol id="i-origami" viewBox="85 112 348 300">
+          <polygon points="166,126 346,126 416,256 346,386 166,386 96,256" fill="#c3c6d2" transform="translate(6,9)" />
+          <polygon points="166,126 346,126 416,256 346,386 166,386 96,256" fill="url(#logo-hex-face)" stroke="#d7d9e2" stroke-width="2" />
+
+          <polygon points="256,256 256,154 154,256" fill="#5fb8c4" />
+          <polygon points="256,256 256,154 358,256" fill="#3f9aa8" />
+          <polygon points="256,256 256,358 358,256" fill="#f0b25a" />
+          <polygon points="256,256 256,358 154,256" fill="#d98a1f" />
+          <polygon points="256,154 358,256 256,358 154,256" fill="none" stroke="#1c2430" stroke-opacity="0.18" stroke-width="3" stroke-linejoin="round" />
+
+          <polygon points="256,178 334,256 256,334 178,256" fill="url(#logo-hex-face)" stroke="#d7d9e2" stroke-width="2" stroke-linejoin="round" />
+
+          <polygon points="256,256 256,201 201,256" fill="#3f9aa8" />
+          <polygon points="256,256 256,201 311,256" fill="#1f6672" />
+          <polygon points="256,256 256,311 311,256" fill="#e8a233" />
+          <polygon points="256,256 256,311 201,256" fill="#c27818" />
+          <polygon points="256,201 311,256 256,311 201,256" fill="none" stroke="#1c2430" stroke-opacity="0.2" stroke-width="2.5" stroke-linejoin="round" />
+
+          <path d="M226,244 L256,278 L298,228" fill="none" stroke="#ffffff" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" />
+        </symbol>
+      </defs>
+    </svg>
+
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <svg class="icon icon-brand icon-logo"><use href="#i-origami"></use></svg>
+          <span class="brand-name">Kleido</span>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-btn" id="btn-open-help" title="Comment ça marche ?">
+            <svg class="icon"><use href="#i-info"></use></svg>
+          </button>
+          <div class="offline-pill" title="Aucun plugin réseau n'est présent dans ce binaire">
+            <svg class="icon"><use href="#i-lock"></use></svg>
+            <span>Hors-ligne</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="identity-bar">
+        <div class="identity-empty" id="identity-empty">
+          <svg class="icon icon-lg"><use href="#i-user"></use></svg>
+          <div class="identity-empty-body">
+            <p class="identity-empty-title">Aucune identité active</p>
+            <p class="identity-empty-hint">
+              Une identité = une paire de clés stockée dans le trousseau système de votre OS.
+              La clé privée ne quitte jamais cette machine.
+              <span class="info-tip" tabindex="0">
+                <svg class="icon icon-info"><use href="#i-info"></use></svg>
+                <span class="info-tip-bubble">
+                  Protégez votre clé privée. Elle est stockée dans le trousseau sécurisé de
+                  votre système, mais reste accessible tant que votre session est ouverte.
+                  Verrouillez votre PC quand vous vous absentez, utilisez un mot de passe
+                  Windows fort, et ne lancez jamais cette app sur une machine partagée ou
+                  compromise. Une clé privée volée = quelqu'un d'autre peut signer à votre
+                  place.
+                </span>
+              </span>
+            </p>
+            <div class="identity-form">
+              <input id="username" type="text" placeholder="nom de l'identité, ex. monpseudo" autocomplete="off" />
+              <button id="btn-generate" class="btn btn-primary">
+                <svg class="icon"><use href="#i-key"></use></svg>
+                Créer
+              </button>
+              <button id="btn-load" class="btn btn-ghost">Charger</button>
+              <button id="btn-open-import" class="btn btn-ghost">Restaurer…</button>
+            </div>
+            <div class="known-chips" id="known-chips"></div>
+          </div>
+        </div>
+
+        <div class="identity-active hidden" id="identity-active">
+          <div class="identity-avatar" id="identity-avatar">?</div>
+          <div class="identity-meta">
+            <span class="identity-name-row">
+              <strong id="identity-name-label"></strong>
+              <span class="info-tip" tabindex="0">
+                <svg class="icon icon-info"><use href="#i-info"></use></svg>
+                <span class="info-tip-bubble">
+                  Protégez votre clé privée. Elle est stockée dans le trousseau sécurisé de
+                  votre système, mais reste accessible tant que votre session est ouverte.
+                  Verrouillez votre PC quand vous vous absentez, utilisez un mot de passe
+                  Windows fort, et ne lancez jamais cette app sur une machine partagée ou
+                  compromise. Une clé privée volée = quelqu'un d'autre peut signer à votre
+                  place.
+                </span>
+              </span>
+            </span>
+            <code class="fingerprint" id="identity-fingerprint"></code>
+          </div>
+          <div class="identity-actions">
+            <button class="icon-btn" id="btn-copy-pubkey" title="Copier la clé publique">
+              <svg class="icon"><use href="#i-copy"></use></svg>
+            </button>
+            <button class="icon-btn" id="btn-export-pubkey" title="Exporter la clé publique">
+              <svg class="icon"><use href="#i-download"></use></svg>
+            </button>
+            <button class="icon-btn icon-btn-accent" id="btn-open-backup" title="Sauvegarder ma clé privée (phrase de récupération)">
+              <svg class="icon"><use href="#i-shield"></use></svg>
+            </button>
+            <button class="icon-btn" id="btn-switch-identity" title="Changer d'identité">
+              <svg class="icon"><use href="#i-swap"></use></svg>
+            </button>
+            <button class="icon-btn icon-btn-danger" id="btn-delete" title="Supprimer cette identité">
+              <svg class="icon"><use href="#i-trash"></use></svg>
+            </button>
+          </div>
+        </div>
+
+        <p class="status" id="identity-status" role="status"></p>
+      </section>
+
+      <nav class="segmented segmented-main" id="main-tabs" style="--count: 2">
+        <span class="segmented-thumb" id="main-thumb"></span>
+        <button class="segmented-btn active" data-panel="sign" type="button">
+          <svg class="icon"><use href="#i-pencil"></use></svg>
+          Signer
+        </button>
+        <button class="segmented-btn" data-panel="verify" type="button">
+          <svg class="icon"><use href="#i-shield-check"></use></svg>
+          Vérifier
+        </button>
+      </nav>
+
+      <main class="panels">
+        <!-- Panneau Signer -->
+        <section class="panel" id="panel-sign">
+          <p class="notice hidden" id="sign-notice">
+            Créez ou chargez une identité ci-dessus pour activer la signature.
+          </p>
+
+          <div class="segmented segmented-sub" id="sign-sub-tabs" style="--count: 2">
+            <span class="segmented-thumb" id="sign-sub-thumb"></span>
+            <button class="segmented-btn active" data-mode="text" type="button">Texte</button>
+            <button class="segmented-btn" data-mode="file" type="button">Fichier</button>
+          </div>
+
+          <div id="sign-text-mode">
+            <label for="text-content">Contenu à signer</label>
+            <textarea id="text-content" rows="6" placeholder="Article, post, commentaire…"></textarea>
+            <button id="btn-sign-text" class="btn btn-primary btn-block" disabled>
+              <svg class="icon"><use href="#i-pencil"></use></svg>
+              Signer ce texte
+            </button>
+
+            <div class="result hidden" id="text-sign-result">
+              <div class="result-row">
+                <label>Signature</label>
+                <div class="copy-field">
+                  <code id="text-signature-value" class="key-value"></code>
+                  <button class="icon-btn" data-copy-target="text-signature-value" title="Copier">
+                    <svg class="icon"><use href="#i-copy"></use></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="result-row">
+                <label>Bloc complet à publier avec le contenu</label>
+                <textarea id="text-sign-block" rows="5" readonly></textarea>
+                <div class="row">
+                  <button class="btn btn-ghost" id="btn-copy-text-block">
+                    <svg class="icon"><use href="#i-copy"></use></svg>
+                    Copier le bloc
+                  </button>
+                  <button class="btn btn-ghost" id="btn-export-text-block">
+                    <svg class="icon"><use href="#i-download"></use></svg>
+                    Exporter…
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="sign-file-mode" class="hidden">
+            <div class="dropzone" id="sign-dropzone" tabindex="0" role="button">
+              <svg class="icon icon-xl"><use href="#i-upload"></use></svg>
+              <p><strong>Glissez un fichier ici</strong> ou cliquez pour parcourir</p>
+              <p class="hint">Image, vidéo… Un hachage SHA-256 est calculé puis signé.</p>
+            </div>
+            <div class="picked-file hidden" id="sign-picked-file">
+              <svg class="icon"><use href="#i-file"></use></svg>
+              <span id="sign-file-name" class="picked-file-name"></span>
+              <button class="icon-btn" id="btn-clear-sign-file" title="Retirer">
+                <svg class="icon"><use href="#i-x"></use></svg>
+              </button>
+            </div>
+
+            <button id="btn-sign-file" class="btn btn-primary btn-block" disabled>
+              <svg class="icon"><use href="#i-pencil"></use></svg>
+              Signer ce fichier
+            </button>
+
+            <div class="result hidden" id="file-sign-result">
+              <div class="result-row">
+                <label>Hachage SHA-256</label>
+                <code id="file-hash-value" class="key-value"></code>
+              </div>
+              <div class="result-row">
+                <label>Signature</label>
+                <div class="copy-field">
+                  <code id="file-signature-value" class="key-value"></code>
+                  <button class="icon-btn" data-copy-target="file-signature-value" title="Copier">
+                    <svg class="icon"><use href="#i-copy"></use></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="row">
+                <button class="btn btn-ghost" id="btn-export-file-sig">
+                  <svg class="icon"><use href="#i-download"></use></svg>
+                  Exporter le bloc…
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Panneau Vérifier -->
+        <section class="panel hidden" id="panel-verify">
+          <label for="verify-pubkey">Clé publique de l'auteur (hex)</label>
+          <input id="verify-pubkey" type="text" placeholder="clé publique connue via bio, DNS…" />
+
+          <div class="segmented segmented-sub" id="verify-sub-tabs" style="--count: 2">
+            <span class="segmented-thumb" id="verify-sub-thumb"></span>
+            <button class="segmented-btn active" data-mode="text" type="button">Texte</button>
+            <button class="segmented-btn" data-mode="file" type="button">Fichier</button>
+          </div>
+
+          <div id="verify-text-mode">
+            <label for="verify-text-content">Contenu original</label>
+            <textarea id="verify-text-content" rows="5" placeholder="Collez le contenu original à vérifier…"></textarea>
+          </div>
+
+          <div id="verify-file-mode" class="hidden">
+            <div class="dropzone" id="verify-dropzone" tabindex="0" role="button">
+              <svg class="icon icon-xl"><use href="#i-upload"></use></svg>
+              <p><strong>Glissez le fichier ici</strong> ou cliquez pour parcourir</p>
+            </div>
+            <div class="picked-file hidden" id="verify-picked-file">
+              <svg class="icon"><use href="#i-file"></use></svg>
+              <span id="verify-file-name" class="picked-file-name"></span>
+              <button class="icon-btn" id="btn-clear-verify-file" title="Retirer">
+                <svg class="icon"><use href="#i-x"></use></svg>
+              </button>
+            </div>
+          </div>
+
+          <label for="verify-signature">Signature (hex)</label>
+          <input id="verify-signature" type="text" placeholder="signature fournie par l'auteur" />
+
+          <button id="btn-verify" class="btn btn-primary btn-block">
+            <svg class="icon"><use href="#i-shield-check"></use></svg>
+            Vérifier
+          </button>
+
+          <div class="verify-outcome-panel hidden" id="verify-result">
+            <svg class="icon icon-xl" id="verify-outcome-icon"><use href="#i-check"></use></svg>
+            <p class="verify-outcome-title" id="verify-outcome-title"></p>
+            <p class="verify-outcome-detail" id="verify-outcome-detail"></p>
+          </div>
+        </section>
+      </main>
+
+      <footer class="app-footer">
+        <p>Ed25519 · SHA-256 · Pas de CA, pas de Trust List — la clé publique fait foi.</p>
+      </footer>
+    </div>
+
+    <!-- Modale d'aide / onboarding -->
+    <div class="modal-overlay hidden" id="help-modal-overlay">
+      <div class="modal modal-wide" role="dialog" aria-modal="true" aria-label="Comment fonctionne Kleido">
+        <button class="modal-close" id="btn-close-help" aria-label="Fermer">
+          <svg class="icon"><use href="#i-x"></use></svg>
+        </button>
+
+        <svg class="icon icon-xl modal-icon icon-logo"><use href="#i-origami"></use></svg>
+        <h3>Comment fonctionne Kleido</h3>
+
+        <div class="help-section">
+          <h4>Le principe en une phrase</h4>
+          <p>
+            Vous signez vos publications avec une clé privée secrète ; n'importe qui peut
+            vérifier cette signature avec votre clé publique, connue de tous. Personne ne peut
+            publier en votre nom sans votre clé privée.
+          </p>
+        </div>
+
+        <div class="help-section">
+          <h4>Clé privée / clé publique</h4>
+          <p>
+            <strong>Clé privée</strong> : comme une signature manuscrite secrète. Elle ne quitte
+            jamais cet ordinateur — personne d'autre que vous ne doit jamais la voir.
+          </p>
+          <p>
+            <strong>Clé publique</strong> : comme un tampon que tout le monde peut voir. Elle
+            sert uniquement à vérifier vos signatures — la partager ne présente aucun risque.
+          </p>
+        </div>
+
+        <div class="help-section">
+          <h4>Publiez votre clé publique partout</h4>
+          <p>
+            Bio X/Twitter, description YouTube, site personnel… Plus votre clé publique est
+            présente à des endroits que vous contrôlez, plus il est difficile pour quelqu'un de
+            la falsifier.
+          </p>
+        </div>
+
+        <div class="help-section">
+          <h4>À faire dès maintenant</h4>
+          <p>
+            Sauvegardez votre phrase de récupération (bouton
+            <svg class="icon icon-inline"><use href="#i-shield"></use></svg>
+            à côté de votre identité). Sans elle, la perte de cet ordinateur signifie la perte
+            définitive de votre identité.
+          </p>
+        </div>
+
+        <button class="btn btn-primary btn-block" id="btn-help-done">Compris, commencer</button>
+      </div>
+    </div>
+
+    <!-- Modale de sauvegarde (phrase de récupération, façon Ledger) -->
+    <div class="modal-overlay hidden" id="backup-modal-overlay">
+      <div class="modal" role="dialog" aria-modal="true" aria-label="Sauvegarder la clé privée">
+        <button class="modal-close" id="btn-close-backup" aria-label="Fermer">
+          <svg class="icon"><use href="#i-x"></use></svg>
+        </button>
+
+        <div class="modal-step" id="backup-step-warning">
+          <svg class="icon icon-xl modal-icon"><use href="#i-shield"></use></svg>
+          <h3>Sauvegarder votre clé privée</h3>
+          <p class="modal-text">
+            Vous allez afficher votre <strong>phrase de récupération</strong> : 24 mots qui
+            permettent de reconstituer votre clé privée sur n'importe quelle machine.
+          </p>
+          <ul class="modal-warning-list">
+            <li>Ne la photographiez jamais, ne la stockez jamais en ligne (cloud, email, capture d'écran).</li>
+            <li>Notez-la à la main sur papier, dans un endroit sûr, séparé de cet ordinateur.</li>
+            <li>Quiconque possède ces 24 mots peut signer à votre place. Ne la partagez avec personne, jamais.</li>
+          </ul>
+          <button class="btn btn-primary btn-block" id="btn-backup-reveal">
+            J'ai compris, afficher ma phrase
+          </button>
+        </div>
+
+        <div class="modal-step hidden" id="backup-step-reveal">
+          <h3>Votre phrase de récupération</h3>
+          <p class="modal-text">Notez ces 24 mots dans l'ordre, sur papier.</p>
+          <div class="mnemonic-grid" id="mnemonic-reveal-grid"></div>
+          <button class="btn btn-primary btn-block" id="btn-backup-noted">J'ai noté ma phrase</button>
+        </div>
+
+        <div class="modal-step hidden" id="backup-step-verify">
+          <h3>Vérification</h3>
+          <p class="modal-text">Pour confirmer, entrez les mots demandés.</p>
+          <div class="mnemonic-verify" id="mnemonic-verify-fields"></div>
+          <p class="status" id="backup-verify-status"></p>
+          <button class="btn btn-primary btn-block" id="btn-backup-verify">Vérifier</button>
+        </div>
+
+        <div class="modal-step hidden" id="backup-step-done">
+          <svg class="icon icon-xl modal-icon modal-icon-ok"><use href="#i-check"></use></svg>
+          <h3>Sauvegarde confirmée</h3>
+          <p class="modal-text">
+            Conservez ce papier en lieu sûr, séparé de cet ordinateur. Il permet de restaurer
+            l'identité « <strong id="backup-done-username"></strong> » sur n'importe quelle
+            machine avec Kleido.
+          </p>
+          <button class="btn btn-primary btn-block" id="btn-backup-done">Terminer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modale de restauration depuis une phrase de récupération -->
+    <div class="modal-overlay hidden" id="import-modal-overlay">
+      <div class="modal" role="dialog" aria-modal="true" aria-label="Restaurer une identité">
+        <button class="modal-close" id="btn-close-import" aria-label="Fermer">
+          <svg class="icon"><use href="#i-x"></use></svg>
+        </button>
+        <h3>Restaurer une identité</h3>
+        <p class="modal-text">À partir d'une phrase de récupération de 24 mots.</p>
+        <label for="import-username">Nom de l'identité</label>
+        <input id="import-username" type="text" placeholder="nom de l'identité" autocomplete="off" />
+        <label for="import-phrase">Phrase de récupération (24 mots)</label>
+        <textarea id="import-phrase" rows="4" placeholder="mot1 mot2 mot3 …"></textarea>
+        <p class="status" id="import-status"></p>
+        <button class="btn btn-primary btn-block" id="btn-import-confirm">Restaurer</button>
+      </div>
+    </div>
+  </body>
+</html>
